@@ -29,6 +29,15 @@ from pycocotools import _mask as coco_mask
 
 
 
+def check_class_order(arr, gt):
+    print(arr)
+    print(gt)
+    if list(gt) == list(arr):
+        print('Class order consistent')
+    else:
+        print('!!! Class order not consistent')
+
+
 def features_from_masks(imgfile, img_path, df, category_name, img_files):  
     mask_img_file = img_path + imgfile + '.png'
     image = cv2.imread(mask_img_file)
@@ -91,14 +100,15 @@ def features_from_masks(imgfile, img_path, df, category_name, img_files):
                 n_defects = n_defects + len(defects)
         n_conv_defects.append(n_defects)
 
-        m = cv2.moments(contours[0])
+        # find the biggest countour (c) by the area
+        c = max(contours, key = cv2.contourArea)
+        m = cv2.moments(c)
         humoments = cv2.HuMoments(m).flatten()
         moments.append(humoments)
     return majors, minors, areas, n_contours, n_conv_defects, moments
 
 
-def compute_mask_metrics(imgs, imgs_path, df, img_files):
-    cats = ['fish', 'bad', 'head', 'double']
+def compute_mask_metrics(imgs, imgs_path, df, img_files, cats):
     all_majors = defaultdict(list)
     all_minors = defaultdict(list)
     all_areas = defaultdict(list)
@@ -130,11 +140,14 @@ def get_features(metrics_list, classes):
         moms = pd.DataFrame(momss[cl])
         df = pd.DataFrame([maj[cl], mino[cl], areas[cl], c_cont[cl], c_conv[cl], mvals(moms, 0), mvals(moms, 1), \
                            mvals(moms, 2), mvals(moms, 3), mvals(moms, 4), mvals(moms, 5), mvals(moms, 6)]).T
+        print(cl, 'df len', len(df))
         alldf.append(df)
     return alldf
 
 
 def get_feature_array(dfs):
+    # fish, bad, head, double
+    print('lens', '0:', len(dfs[0]), ', 1:', len(dfs[1]), ', 2:', len(dfs[2]), ', 3:', len(dfs[3]))
     y = list(np.repeat(0, len(dfs[0]))) + list(np.repeat(1, len(dfs[1]))) + list(np.repeat(2, len(dfs[2]))) + list(np.repeat(3, len(dfs[3])))
     X = np.array(scale(pd.concat(dfs).to_numpy()))
     return X, y
@@ -160,10 +173,11 @@ def cross_validate(X, y, class_i, rs, classes):
     print('One-vs-all binary classification, class', class_i, ':', classes[class_i], 'vs all')
     # commented: all classes. not commented and classes specified: binary one-vs-all.
     y = [0 if cl == class_i else 1 for cl in y]
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=rs)
     for clf in classifiers:
         print('Cross-validation, model', clf)
-        scores = cross_val_score(clf, X, y, cv=5)
-        print("%0.2f accuracy with a standard deviation of %0.2f" % (scores.mean(), scores.std()))
+        scores = cross_val_score(clf, X, y, cv=skf)
+        print("%0.3f accuracy with a standard deviation of %0.3f" % (scores.mean(), scores.std()))
 
 
 def evaluate_improvement(predict_result, y_test, mode):
@@ -223,7 +237,7 @@ def evaluate_improvement(predict_result, y_test, mode):
     return filtering_result
 
 
-def cross_validate_filtering_results(X, y, rs, prompt_method):
+def cross_validate_filtering_results(X, y, rs, prompt_method, binary):
     X = np.array(X)
     y = np.array(y)
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=rs)
@@ -232,7 +246,14 @@ def cross_validate_filtering_results(X, y, rs, prompt_method):
     scores_fh = []
     scores_fhm = []
     conf_matrix_list_of_arrays = []
+    
+    # binary one-vs-all classifier 'fish' results
+    if binary:
+        y = np.array([0 if cl == 0 else 1 for cl in y])
+
     for i, (train_index, test_index) in enumerate(skf.split(X, y)):
+        print('Train/test split', len(train_index), '/', len(test_index))
+
         clf.fit(X[train_index], y[train_index])
         predictions = clf.predict(X[test_index])
         score = evaluate_improvement(predictions, y[test_index], mode='fish')
@@ -246,33 +267,46 @@ def cross_validate_filtering_results(X, y, rs, prompt_method):
         conf_matrix_list_of_arrays.append(cm)
     mean_of_conf_matrix_arrays = np.mean(conf_matrix_list_of_arrays, axis=0)
     fig, ax = plt.subplots()
-    disp = ConfusionMatrixDisplay(confusion_matrix=mean_of_conf_matrix_arrays,
-                                  display_labels=['fish', 'bad', 'head', 'multiple'])
+
+    if binary:
+        disp = ConfusionMatrixDisplay(confusion_matrix=mean_of_conf_matrix_arrays,
+                                      display_labels=['fish', 'other'])
+    else:
+        disp = ConfusionMatrixDisplay(confusion_matrix=mean_of_conf_matrix_arrays,
+                                      display_labels=['fish', 'bad', 'head', 'multiple'])
     disp.plot(ax=ax, values_format='.0f')
     plt.title(prompt_method)
     plt.show()
     return scores_f, scores_fh, scores_fhm
 
 
-def cross_validate_baseline_filtering_results(df, rs, filter_max, filter_min):
+def cross_validate_baseline_filtering_results(df, rs, filter_max, filter_min, ground_truth_order):
     areas = df['area'].values
-    true_classes = [i-1 for i in df['category_id'].values]
-    print(true_classes.count(0))
-    print(true_classes.count(1))
-    print(true_classes.count(2))
-    print(true_classes.count(3))
+    true_classes = list(df['category_id'].values)
+    check_class_order([true_classes.count(0), true_classes.count(1), true_classes.count(2), true_classes.count(3)], ground_truth_order)
+
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=rs)
     scores_f = []
     scores_fh = []
     scores_fhm = []
+    scores_tf = []
+    scores_tfh = []
     print('N', len(true_classes))
     for i, (train_index, test_index) in enumerate(skf.split(areas, true_classes)):
         print('Train/test split', len(train_index), '/', len(test_index))
+        true_fish = 0
+        true_head = 0
         filtered_masks = []
         for j in test_index:
             if (areas[j] < filter_max) and (areas[j] > filter_min):
                 filtered_masks.append(true_classes[j])
+            if true_classes[j] == 0:
+                true_fish += 1
+            if true_classes[j] == 2:
+                true_head += 1
         scores_f.append((len([i for i in filtered_masks if i == 0]) / len(filtered_masks)))
         scores_fh.append((len([i for i in filtered_masks if (i == 0 or i == 2)]) / len(filtered_masks)))
         scores_fhm.append((len([i for i in filtered_masks if i != 1]) / len(filtered_masks)))
-    return scores_f, scores_fh, scores_fhm
+        scores_tf.append((true_fish / len(test_index)))
+        scores_tfh.append((true_head / len(test_index)))
+    return scores_f, scores_fh, scores_fhm, scores_tf, scores_tfh
