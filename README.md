@@ -1,6 +1,6 @@
 # Automatic visual segmentation of fish in Recirculated Aquaculture Systems using the Segment Anything Model
 
-_Fred  H., Krogh M. A., Bang-Jensen B., Ruotsalainen L., Vielma J., Pastell M._,
+_Fred  H., Krogh M. A., Bang Jensen B., Ruotsalainen L., Vielma J., Pastell M._,
 2025
 
 [Paper] [Dataset](https://doi.org/10.5281/zenodo.15528511)
