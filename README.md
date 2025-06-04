@@ -3,7 +3,7 @@
 _Fred  H., Krogh M. A., Bang Jensen B., Ruotsalainen L., Vielma J., Pastell M._,
 2025
 
-[Paper] [Dataset](https://doi.org/10.5281/zenodo.15528511)
+[[Preprint](https://dx.doi.org/10.2139/ssrn.5281709)] [[Dataset](https://doi.org/10.5281/zenodo.15528511)]
 
 This repository contains the notebook to reproduce the results presented in _Automatic visual segmentation of fish in Recirculated Aquaculture Systems using the Segment Anything Model_. 
 
