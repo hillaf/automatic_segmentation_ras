@@ -1,6 +1,6 @@
 # Submission Evaluation Code
 
-This directory is a clean, reviewable evaluation code base for the paper
+This directory is a reviewable evaluation code base for the paper
 revision.
 
 The main scope is the table-producing evaluation code:
@@ -44,9 +44,7 @@ Mask features intentionally use the raw-Hu legacy feature definition: ellipse
 axes, contour area, contour count, convexity-defect count, and raw Hu moments.
 
 The one-vs-all classification table uses the same image-grouped folds and
-per-fold scaling inside sklearn pipelines. Its RF classifier keeps the legacy
-classification-table settings: `max_depth=10`, `n_estimators=20`, and
-`max_features=3`.
+per-fold scaling inside sklearn pipelines.
 
 ## Entry Point
 
@@ -60,25 +58,7 @@ classification-table settings: `max_depth=10`, `n_estimators=20`, and
 `diagnostics.md`. Numeric computation lives in `publication_results.py`; the
 table module only renders those results to TeX.
 
-## Caching
-
-The table-generation code does not read hidden caches. Generated head boxes are
-recomputed from the SAM masks when `publication_tables` runs.
-
 ## Agreement Labels
 
-The publication data folder includes `data/agreement_study_labels_sampled/`, a
-neutral copy of the 76 label files listed in
-`data/agreement_sample_common211_scaled_to_camera3.txt`.
+The publication data folder includes `data/agreement_study_labels_sampled/`, 76 label files from three annotators.
 
-## Findings to Check Before Submission
-
-Two conflicts are intentionally surfaced by `generated_tables/diagnostics.md`:
-
-- The raw-Hu legacy feature extractor changes the regenerated final
-  post-processing values relative to `final_tables.tex`. The current
-  `final_tables.tex` values appear to match a signed-log Hu feature extractor,
-  while the one-vs-all table uses raw Hu moments.
-
-Plotting code belongs under `submission_code/plots/` and may import these
-evaluation modules. Evaluation modules must not import plotting code.
