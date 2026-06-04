@@ -1,0 +1,22 @@
+\begin{table}[htbp]
+\centering
+\small
+\setlength{\tabcolsep}{1.5pt}
+\renewcommand{\arraystretch}{0.9}
+\begin{tabular}{l|rrr|r|rrrrrrr}
+\hline
+ & \multicolumn{3}{c|}{Mask count} &  & \multicolumn{7}{c}{Detection at IoU 0.30} \\
+  \shortstack{Prompt/\\filter}  & GT & \shortstack{Before\\filter} & \shortstack{After\\filter} & \shortstack{Mask\\P\\(\%)}  & TP & FP & FN & P & R & F1 & \shortstack{Mean\\IoU} \\
+\hline
+M/None & 1165 & 1061 & 1061 & 62.0 & 637 & 425 & 528 & 0.600 & 0.547 & 0.572 & 0.485 \\
+ & $\pm$ 50 & $\pm$ 26 & $\pm$ 26 & $\pm$ 0.7 & $\pm$ 17 & $\pm$ 25 & $\pm$ 44 & $\pm$ 0.017 & $\pm$ 0.021 & $\pm$ 0.019 & $\pm$ 0.004 \\
+M/Ours & 1165 & 1061 & 784 & 85.2 & 586 & 198 & 579 & 0.747 & 0.504 & 0.602 & 0.486 \\
+ & $\pm$ 50 & $\pm$ 26 & $\pm$ 19 & $\pm$ 1.4 & $\pm$ 20 & $\pm$ 12 & $\pm$ 67 & $\pm$ 0.015 & $\pm$ 0.037 & $\pm$ 0.030 & $\pm$ 0.003 \\
+\hline
+A/None & 1165 & 1275 & 1275 & 49.9 & 421 & 855 & 744 & 0.330 & 0.361 & 0.345 & 0.487 \\
+ & $\pm$ 42 & $\pm$ 14 & $\pm$ 14 & $\pm$ 1.0 & $\pm$ 19 & $\pm$ 31 & $\pm$ 43 & $\pm$ 0.018 & $\pm$ 0.019 & $\pm$ 0.017 & $\pm$ 0.007 \\
+A/Ours & 1165 & 1275 & 801 & 77.7 & 355 & 446 & 810 & 0.443 & 0.305 & 0.361 & 0.489 \\
+ & $\pm$ 42 & $\pm$ 14 & $\pm$ 26 & $\pm$ 2.2 & $\pm$ 29 & $\pm$ 26 & $\pm$ 44 & $\pm$ 0.031 & $\pm$ 0.024 & $\pm$ 0.026 & $\pm$ 0.005 \\
+\hline
+\end{tabular}%
+\end{table}
