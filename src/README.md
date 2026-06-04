@@ -1,4 +1,4 @@
-# Submission Evaluation Code
+# Method Evaluation Code
 
 This directory is a reviewable evaluation code base for the paper
 revision.
