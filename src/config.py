@@ -8,11 +8,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
 
 DATASET_FILES = {
-    "automatic": DATA_DIR / "masks_annotations_automatic" / "annotations_automatic.json",
+    "automatic": DATA_DIR / "masks_automatic" / "annotations_automatic.json",
     "manual": DATA_DIR / "masks_bounding_box_prompted" / "annotations_bounding_box_prompted.json",
 }
 
-GT_BBOX_DIR = DATA_DIR / "bounding_boxes_human_annotations"
+GT_BBOX_DIR = DATA_DIR / "bounding_boxes_annotated"
 IMAGE_DIR = DATA_DIR / "images"
 
 CLASS_ORDER = ["fish", "bad", "head", "double"]
