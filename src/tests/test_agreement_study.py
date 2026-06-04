@@ -1,10 +1,10 @@
 import unittest
 
-from submission_code.agreement_study import pairwise_agreement_rows
+from src.agreement_study import pairwise_agreement_rows
 
 
-class AgreementStudyTests(unittest.TestCase):
-    def test_pairwise_agreement_matches_sampled_table_values(self):
+class PairwiseAgreementTests(unittest.TestCase):
+    def test_pairwise_agreement_matches_table_values(self):
         rows = pairwise_agreement_rows()
 
         self.assertEqual(

@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from submission_code.classification_cv import classifier_specs
+from src.classification_cv import classifier_specs
 
 
 class ClassificationCvTests(unittest.TestCase):

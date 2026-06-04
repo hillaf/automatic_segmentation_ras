@@ -3,7 +3,7 @@ import unittest
 import cv2
 import numpy as np
 
-from submission_code.mask_features import extract_mask_features
+from src.mask_features import extract_mask_features
 
 
 class MaskFeatureTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from submission_code.detection_metrics import iou, match_detection_boxes, one_to_one_iou_matches
+from src.detection_metrics import iou, match_detection_boxes, one_to_one_iou_matches
 
 
 class DetectionMetricsTests(unittest.TestCase):

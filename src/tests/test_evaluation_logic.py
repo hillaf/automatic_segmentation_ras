@@ -1,8 +1,8 @@
 import unittest
 
-from submission_code.box_generation import box_for_prediction
-from submission_code.evaluate_detection import gt_boxes_for_test_fold, predicted_boxes_for_test_fold
-from submission_code.mask_classifier import FoldPrediction
+from src.box_generation import box_for_prediction
+from src.evaluate_detection import gt_boxes_for_test_fold, predicted_boxes_for_test_fold
+from src.mask_classifier import FoldPrediction
 
 
 class EvaluationLogicTests(unittest.TestCase):
