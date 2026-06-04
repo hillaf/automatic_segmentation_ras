@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment
@@ -11,8 +10,7 @@ from scipy.optimize import linear_sum_assignment
 from .config import DATA_DIR
 
 
-AGREEMENT_LABEL_DIR = DATA_DIR / "agreement_study_labels_sampled"
-AGREEMENT_SAMPLE_FILE = DATA_DIR / "agreement_sample_common211_scaled_to_camera3.txt"
+AGREEMENT_LABEL_DIR = DATA_DIR / "agreement_study_labels"
 AGREEMENT_IOU_THRESHOLD = 0.30
 ANNOTATOR_ORDER = ("annotator_a", "annotator_b", "annotator_c")
 PAIR_ORDER = (
@@ -44,10 +42,6 @@ class AgreementBox:
         )
 
 
-def load_sample_ids(path: Path = AGREEMENT_SAMPLE_FILE) -> list[str]:
-    return [line.strip() for line in path.read_text().splitlines() if line.strip()]
-
-
 def read_yolo_boxes(path: Path) -> list[AgreementBox]:
     boxes = []
     for line in path.read_text().splitlines():
@@ -69,6 +63,15 @@ def load_agreement_labels(label_dir: Path = AGREEMENT_LABEL_DIR) -> dict[str, di
             for path in sorted(annotator_dir.glob("*.txt"))
         }
     return labels
+
+
+def agreement_image_ids(labels: dict[str, dict[str, list[AgreementBox]]]) -> list[str]:
+    """Use the fixed agreement-study files present for all annotators."""
+
+    common_ids = set(labels[ANNOTATOR_ORDER[0]])
+    for annotator in ANNOTATOR_ORDER[1:]:
+        common_ids &= set(labels[annotator])
+    return sorted(common_ids)
 
 
 def box_iou(box_a: AgreementBox, box_b: AgreementBox) -> float:
@@ -113,11 +116,10 @@ def hungarian_same_class_matches(
 
 
 def pairwise_agreement_rows(
-    sample_ids: Iterable[str] | None = None,
     iou_threshold: float = AGREEMENT_IOU_THRESHOLD,
 ) -> list[dict[str, float | int | str]]:
     labels = load_agreement_labels()
-    image_ids = list(sample_ids) if sample_ids is not None else load_sample_ids()
+    image_ids = agreement_image_ids(labels)
     rows: list[dict[str, float | int | str]] = []
 
     for first, second in PAIR_ORDER:

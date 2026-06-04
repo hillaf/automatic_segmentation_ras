@@ -16,3 +16,7 @@ The mask data can also be found on [Zenodo](https://doi.org/10.5281/zenodo.15528
 Python >= 3.9.6
 
 `pip install -r requirements.txt`
+
+## Plots
+
+`python3 src/evaluate_detection.py --tables`

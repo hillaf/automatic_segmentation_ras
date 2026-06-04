@@ -4,13 +4,18 @@ import argparse
 from pathlib import Path
 from typing import Any
 
+if __package__ in {None, ""}:
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    __package__ = "src"
+
 from .agreement_study import pairwise_agreement_rows
 from .classification_cv import aggregate_one_vs_all_rows, one_vs_all_rows
 from .publication_results import (
     PROMPT_ORDER,
     all_sam_rows,
     class_distribution_rows,
-    diagnostics_text,
     final_detection_rows,
     summarize_values,
 )
@@ -195,12 +200,11 @@ def generate_all(output_dir: Path) -> None:
     (output_dir / "table_mask_class_distribution.tex").write_text(class_distribution_table(class_distribution_rows()))
     (output_dir / "table_one_vs_all_classification.tex").write_text(one_vs_all_classification_table(one_vs_all_rows()))
     (output_dir / "table_final_postprocessing.tex").write_text(final_postprocessing_table(final_detection_rows()))
-    (output_dir / "diagnostics.md").write_text(diagnostics_text())
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate submission result tables from computed result dictionaries.")
-    parser.add_argument("--output-dir", type=Path, default=Path("submission_code/generated_tables"))
+    parser.add_argument("--output-dir", type=Path, default=Path("generated_tables"))
     return parser.parse_args()
 
 

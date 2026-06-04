@@ -77,11 +77,18 @@ def unfiltered_predictions(coco: dict[str, Any], fold_predictions: dict[int, Fol
 
 
 def mask_filtering_by_fold(predictions: dict[int, FoldPrediction], keep_classes: frozenset[str]) -> dict[str, Any]:
+    """Summarize filtering as binary relevance, not multiclass accuracy.
+
+    The final table asks how pure the kept mask set is for the filtering
+    target. A kept mask is therefore correct when its true class is one of the
+    kept classes, even if the classifier confused `fish` and `head`.
+    """
+
     rows = []
     for fold in sorted({prediction.fold for prediction in predictions.values()}):
         fold_predictions = [prediction for prediction in predictions.values() if prediction.fold == fold]
         kept = [prediction for prediction in fold_predictions if prediction.predicted_label in keep_classes]
-        correct = sum(1 for prediction in kept if prediction.true_label == prediction.predicted_label)
+        correct = sum(1 for prediction in kept if prediction.true_label in keep_classes)
         rows.append(
             {
                 "fold": fold,
@@ -154,8 +161,8 @@ def final_detection_rows() -> dict[str, dict[str, Any]]:
         )
         none_predictions = unfiltered_predictions(coco, classifier_predictions)
         rows[f"{dataset}/None"] = {
-            "mask": mask_filtering_by_fold(none_predictions, frozenset({"fish"})),
-            "detection": fold_detection(coco, none_predictions, frozenset({"fish"}), generated_boxes),
+            "mask": mask_filtering_by_fold(none_predictions, frozenset({"fish", "head"})),
+            "detection": fold_detection(coco, none_predictions, frozenset({"fish", "head"}), generated_boxes),
         }
         rows[f"{dataset}/Ours"] = {
             "mask": mask_filtering_by_fold(classifier_predictions, frozenset({"fish", "head"})),
@@ -177,14 +184,3 @@ def class_distribution_rows() -> dict[str, dict[str, Any]]:
         dataset: mask_class_distribution(load_coco_annotations(DATASET_FILES[dataset]))
         for dataset in PROMPT_ORDER
     }
-
-
-def diagnostics_text() -> str:
-    lines = [
-        "# Evaluation diagnostics",
-        "",
-        "- Generated one-vs-all classification values differ from `final_tables.tex` because the cleaned code uses image-grouped folds and per-fold scaling instead of the legacy mask-level folds with global scaling.",
-        "- Generated final post-processing values now differ from `final_tables.tex` after switching `extract_mask_features` to the raw-Hu legacy feature extractor.",
-        "- `final_tables.tex` appears to match a signed-log Hu feature extractor for final post-processing, while the one-vs-all classification table uses raw Hu moments.",
-    ]
-    return "\n".join(lines) + "\n"

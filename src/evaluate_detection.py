@@ -6,6 +6,12 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+if __package__ in {None, ""}:
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    __package__ = "src"
+
 from .box_generation import box_for_prediction
 from .config import DATASET_FILES, FISH_AND_HEAD_CONFIG, FISH_ONLY_CONFIG, GT_BBOX_DIR, EvaluationConfig
 from .data_loading import gt_boxes_by_image_id, image_table, load_coco_annotations
@@ -129,11 +135,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Cross-validated detection evaluation for SAM mask post-processing.")
     parser.add_argument("--target", choices=["fish", "fish-head"], default="fish-head")
     parser.add_argument("--output-json", type=Path, default=Path("submission_detection_results.json"))
+    parser.add_argument("--tables", action="store_true", help="Generate all publication tables instead of JSON results.")
+    parser.add_argument("--output-dir", type=Path, default=Path("generated_tables"), help="Output directory for --tables.")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    if args.tables:
+        from .publication_tables import generate_all
+
+        generate_all(args.output_dir)
+        print(f"Wrote generated tables to {args.output_dir}")
+        return
+
     config = FISH_ONLY_CONFIG if args.target == "fish" else FISH_AND_HEAD_CONFIG
     results = run_all_datasets(config)
     args.output_json.write_text(json.dumps(results, indent=2))
