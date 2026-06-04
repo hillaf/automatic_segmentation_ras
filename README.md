@@ -17,6 +17,10 @@ Python >= 3.9.6
 
 `pip install -r requirements.txt`
 
-## Plots
+## Generate tables
 
 `python3 src/evaluate_detection.py --tables`
+
+## Generate plots
+
+WIP
